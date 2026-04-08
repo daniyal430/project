@@ -370,7 +370,7 @@ tbody tr:nth-child(even):hover { background: var(--light-blue); }
             <th style="width:36px"><input type="checkbox" class="select-all-checkbox" id="selectAllProjects" onchange="toggleAllProjectCheckboxes(this.checked)" /></th>
             <th>ID</th><th>Project</th><th>Module</th><th>Business Owner</th><th>PM</th>
             <th>Company</th><th>Phase</th><th>Status</th><th>Priority</th>
-            <th>Start</th><th>Go-Live</th><th>Budget</th><th>Progress</th><th>Risk</th>
+            <th>Start</th><th>Go-Live</th><th>Budget</th><th>Progress</th><th>Risk</th><th>Actions</th>
           </tr></thead>
           <tbody id="projectBody"></tbody>
         </table>
@@ -437,7 +437,7 @@ tbody tr:nth-child(even):hover { background: var(--light-blue); }
 <!-- Project Modal -->
 <div class="modal-overlay" id="projectModal">
   <div class="modal">
-    <h2>New Project</h2>
+    <h2 id="projectModalTitle">New Project</h2>
     <div class="form-grid">
       <div class="form-group"><label>Project Name</label><input id="fpName" /></div>
       <div class="form-group"><label>Module</label><select id="fpModule"></select></div>
@@ -450,6 +450,9 @@ tbody tr:nth-child(even):hover { background: var(--light-blue); }
       <div class="form-group"><label>Start Date</label><input id="fpStart" type="date" /></div>
       <div class="form-group"><label>Target Go-Live</label><input id="fpGoLive" type="date" /></div>
       <div class="form-group"><label>Budget (SAR)</label><input id="fpBudget" type="number" /></div>
+      <div class="form-group"><label>Actual Cost (SAR)</label><input id="fpActual" type="number" /></div>
+      <div class="form-group"><label>Total Tasks</label><input id="fpTotalTasks" type="number" min="0" /></div>
+      <div class="form-group"><label>Completed Tasks</label><input id="fpCompleted" type="number" min="0" /></div>
       <div class="form-group"><label>Risk Level</label><select id="fpRisk"></select></div>
       <div class="form-group full"><label>Description</label><textarea id="fpDesc" rows="2"></textarea></div>
     </div>
@@ -657,6 +660,7 @@ function renderProjects() {
       <td>${(p.budget/1000).toFixed(0)}K SAR</td>
       <td>${progressBar(pct)}</td>
       <td class="${getPriorityClass(p.risk)}">${p.risk}</td>
+      <td><button class="btn btn-secondary" style="padding:4px 8px;font-size:11px" onclick="editProject('${p.id}')">Edit</button></td>
     </tr>`;
   }).join('');
 }
@@ -897,7 +901,11 @@ function saveTask() {
 // ══════════════════════════════════════════════
 // PROJECT MODAL
 // ══════════════════════════════════════════════
-function openProjectModal() {
+let editingProjectId = null;
+
+function openProjectModal(projectId) {
+  editingProjectId = projectId || null;
+  document.getElementById('projectModalTitle').textContent = projectId ? 'Edit Project' : 'New Project';
   populateSelect('fpModule', LOV.modules);
   populateSelect('fpOwner', LOV.owners);
   populateSelect('fpPM', LOV.members);
@@ -906,12 +914,37 @@ function openProjectModal() {
   populateSelect('fpStatus', LOV.statuses);
   populateSelect('fpPriority', LOV.priorities);
   populateSelect('fpRisk', LOV.risks);
+
+  if(projectId) {
+    const p = projects.find(x => x.id === projectId);
+    if(p) {
+      document.getElementById('fpName').value = p.name || '';
+      document.getElementById('fpModule').value = p.module || '';
+      document.getElementById('fpOwner').value = p.owner || '';
+      document.getElementById('fpPM').value = p.pm || '';
+      document.getElementById('fpCompany').value = p.company || '';
+      document.getElementById('fpPhase').value = p.phase || '';
+      document.getElementById('fpStatus').value = p.status || '';
+      document.getElementById('fpPriority').value = p.priority || '';
+      document.getElementById('fpStart').value = p.start || '';
+      document.getElementById('fpGoLive').value = p.goLive || '';
+      document.getElementById('fpBudget').value = p.budget || 0;
+      document.getElementById('fpActual').value = p.actual || 0;
+      document.getElementById('fpTotalTasks').value = p.totalTasks || 0;
+      document.getElementById('fpCompleted').value = p.completed || 0;
+      document.getElementById('fpRisk').value = p.risk || '';
+      document.getElementById('fpDesc').value = p.desc || '';
+    }
+  } else {
+    document.querySelectorAll('#projectModal input, #projectModal textarea').forEach(el => el.value = '');
+  }
   document.getElementById('projectModal').classList.add('show');
 }
-function closeProjectModal() { document.getElementById('projectModal').classList.remove('show'); }
+function editProject(id) { openProjectModal(id); }
+function closeProjectModal() { document.getElementById('projectModal').classList.remove('show'); editingProjectId = null; }
+
 function saveProject() {
-  const p = {
-    id: `PRJ-2026${String(projects.length+1).padStart(3,'0')}`,
+  const data = {
     name: document.getElementById('fpName').value,
     desc: document.getElementById('fpDesc').value,
     module: document.getElementById('fpModule').value,
@@ -924,10 +957,19 @@ function saveProject() {
     start: document.getElementById('fpStart').value,
     goLive: document.getElementById('fpGoLive').value,
     budget: parseInt(document.getElementById('fpBudget').value)||0,
-    actual: 0, totalTasks: 0, completed: 0,
+    actual: parseInt(document.getElementById('fpActual').value)||0,
+    totalTasks: parseInt(document.getElementById('fpTotalTasks').value)||0,
+    completed: parseInt(document.getElementById('fpCompleted').value)||0,
     risk: document.getElementById('fpRisk').value
   };
-  projects.unshift(p);
+
+  if(editingProjectId) {
+    const idx = projects.findIndex(p => p.id === editingProjectId);
+    if(idx >= 0) Object.assign(projects[idx], data);
+  } else {
+    data.id = `PRJ-2026${String(projects.length+1).padStart(3,'0')}`;
+    projects.unshift(data);
+  }
   closeProjectModal();
   renderProjects();
   applyFilters();
