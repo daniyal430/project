@@ -1,1420 +1,2559 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Oracle Fusion Task & Project Dashboard</title>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
+
 :root {
+
   --dark-blue: #1B2A4A;
+
   --med-blue: #2E5090;
+
   --light-blue: #D6E4F0;
+
   --accent-orange: #ED7D31;
+
   --accent-green: #70AD47;
+
   --accent-red: #FF4444;
+
   --bg: #f0f2f5;
+
   --card-bg: #ffffff;
+
   --text: #333;
+
   --text-light: #666;
+
   --shadow: 0 2px 12px rgba(0,0,0,0.08);
+
 }
+
 * { margin: 0; padding: 0; box-sizing: border-box; }
+
 body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); }
 
 /* Header */
+
 .header {
+
   background: linear-gradient(135deg, var(--dark-blue), var(--med-blue));
+
   color: white; padding: 20px 32px; display: flex; justify-content: space-between; align-items: center;
+
   box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+
 }
+
 .header h1 { font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
+
 .header .subtitle { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+
 .header-right { display: flex; gap: 12px; align-items: center; }
+
 .header-right select, .header-right input {
+
   padding: 8px 14px; border: 1px solid rgba(255,255,255,0.3); border-radius: 8px;
+
   background: rgba(255,255,255,0.15); color: white; font-size: 13px; cursor: pointer;
+
 }
+
 .header-right select option { color: #333; background: white; }
+
 .header-right input::placeholder { color: rgba(255,255,255,0.6); }
 
 /* Layout */
+
 .container { max-width: 1400px; margin: 0 auto; padding: 24px; }
 
 /* KPI Cards */
+
 .kpi-row { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; margin-bottom: 24px; }
+
 .kpi-card {
+
   background: var(--card-bg); border-radius: 12px; padding: 20px;
+
   box-shadow: var(--shadow); border-left: 4px solid var(--med-blue);
+
   transition: transform 0.2s, box-shadow 0.2s; cursor: pointer;
+
 }
+
 .kpi-card:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+
 .kpi-card .label { font-size: 12px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+
 .kpi-card .value { font-size: 32px; font-weight: 700; margin: 6px 0; }
+
 .kpi-card .change { font-size: 12px; display: flex; align-items: center; gap: 4px; }
+
 .kpi-card.green { border-color: var(--accent-green); }
+
 .kpi-card.green .value { color: var(--accent-green); }
+
 .kpi-card.orange { border-color: var(--accent-orange); }
+
 .kpi-card.orange .value { color: var(--accent-orange); }
+
 .kpi-card.red { border-color: var(--accent-red); }
+
 .kpi-card.red .value { color: var(--accent-red); }
+
 .kpi-card.blue { border-color: var(--med-blue); }
+
 .kpi-card.blue .value { color: var(--med-blue); }
 
 /* Charts Grid */
+
 .charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+
 .chart-card {
+
   background: var(--card-bg); border-radius: 12px; padding: 20px;
+
   box-shadow: var(--shadow);
+
 }
+
 .chart-card h3 { font-size: 15px; color: var(--dark-blue); margin-bottom: 16px; font-weight: 600; }
 
 /* Tables */
+
 .table-section {
+
   background: var(--card-bg); border-radius: 12px; padding: 20px;
+
   box-shadow: var(--shadow); margin-bottom: 24px;
+
 }
+
 .table-section h3 { font-size: 15px; color: var(--dark-blue); margin-bottom: 16px; font-weight: 600; }
+
 .table-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+
 .table-header .actions { display: flex; gap: 8px; }
+
 .btn {
+
   padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer;
+
   font-size: 13px; font-weight: 500; transition: all 0.2s;
+
 }
+
 .btn-primary { background: var(--med-blue); color: white; }
+
 .btn-primary:hover { background: var(--dark-blue); }
+
 .btn-secondary { background: var(--light-blue); color: var(--dark-blue); }
+
 .btn-danger { background: #ffebee; color: var(--accent-red); }
+
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
 thead th {
+
   background: var(--dark-blue); color: white; padding: 12px 10px;
+
   text-align: left; font-weight: 600; font-size: 12px; text-transform: uppercase;
+
   letter-spacing: 0.5px; position: sticky; top: 0;
+
 }
+
 tbody td { padding: 10px; border-bottom: 1px solid #eee; }
+
 tbody tr:hover { background: var(--light-blue); }
+
 tbody tr:nth-child(even) { background: #fafafa; }
+
 tbody tr:nth-child(even):hover { background: var(--light-blue); }
 
 /* Status badges */
+
 .badge {
+
   padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+
   display: inline-block; text-align: center;
+
 }
+
 .badge-new { background: #e3f2fd; color: #1565c0; }
+
 .badge-progress { background: #fff3e0; color: #e65100; }
+
 .badge-hold { background: #fff9c4; color: #f57f17; }
+
 .badge-review { background: #e8eaf6; color: #283593; }
+
 .badge-testing { background: #e0f7fa; color: #006064; }
+
 .badge-deployed { background: #e8f5e9; color: #2e7d32; }
+
 .badge-completed { background: #c8e6c9; color: #1b5e20; }
+
 .badge-cancelled { background: #f5f5f5; color: #757575; }
 
 .priority-critical { color: var(--accent-red); font-weight: 700; }
+
 .priority-high { color: var(--accent-orange); font-weight: 700; }
+
 .priority-medium { color: #f0a500; font-weight: 600; }
+
 .priority-low { color: var(--accent-green); }
 
 .progress-bar { width: 80px; height: 8px; background: #eee; border-radius: 4px; overflow: hidden; display: inline-block; vertical-align: middle; }
+
 .progress-fill { height: 100%; border-radius: 4px; transition: width 0.3s; }
 
 /* Tabs */
+
 .tabs { display: flex; gap: 2px; margin-bottom: 20px; background: #eee; padding: 4px; border-radius: 10px; }
+
 .tab {
+
   padding: 10px 20px; border: none; background: none; cursor: pointer;
+
   font-size: 13px; font-weight: 500; border-radius: 8px; color: var(--text-light);
+
   transition: all 0.2s;
+
 }
+
 .tab.active { background: white; color: var(--dark-blue); font-weight: 600; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
 
 /* Modal */
+
 .modal-overlay {
+
   display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+
   z-index: 1000; justify-content: center; align-items: center;
+
 }
+
 .modal-overlay.show { display: flex; }
+
 .modal {
+
   background: white; border-radius: 16px; padding: 28px; width: 700px; max-width: 95vw;
+
   max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+
 }
+
 .modal h2 { color: var(--dark-blue); margin-bottom: 20px; font-size: 18px; }
+
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
 .form-group { display: flex; flex-direction: column; gap: 4px; }
+
 .form-group.full { grid-column: 1 / -1; }
+
 .form-group label { font-size: 12px; font-weight: 600; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.5px; }
+
 .form-group input, .form-group select, .form-group textarea {
+
   padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px;
+
   transition: border-color 0.2s;
+
 }
+
 .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+
   border-color: var(--med-blue); outline: none; box-shadow: 0 0 0 3px rgba(46,80,144,0.1);
+
 }
+
 .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px solid #eee; }
 
 /* LOV Manager */
+
 .lov-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
 .lov-card {
+
   background: var(--card-bg); border-radius: 12px; padding: 20px;
+
   box-shadow: var(--shadow); border-top: 3px solid var(--med-blue);
+
 }
+
 .lov-card h4 { color: var(--dark-blue); margin-bottom: 12px; font-size: 14px; }
+
 .lov-item {
+
   display: flex; justify-content: space-between; align-items: center;
+
   padding: 8px 10px; border-radius: 6px; font-size: 13px; margin-bottom: 4px;
+
 }
+
 .lov-item:nth-child(even) { background: #f8f9fa; }
+
 .lov-item .delete-lov { color: var(--accent-red); cursor: pointer; font-size: 16px; opacity: 0.5; }
+
 .lov-item .delete-lov:hover { opacity: 1; }
+
 .lov-add { display: flex; gap: 8px; margin-top: 10px; }
+
 .lov-add input { flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; }
+
 .lov-add button { padding: 8px 12px; background: var(--med-blue); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; }
 
 .table-scroll { max-height: 500px; overflow-y: auto; }
 
 /* Checkbox styling */
+
 .row-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: var(--med-blue); }
+
 .select-all-checkbox { width: 16px; height: 16px; cursor: pointer; accent-color: var(--accent-orange); }
+
 .btn-danger { background: #ffebee; color: var(--accent-red); border: 1px solid #ffcdd2; }
+
 .btn-danger:hover { background: #ffcdd2; }
+
 .btn-export-green { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+
 .btn-export-green:hover { background: #c8e6c9; }
+
 .btn-save { background: linear-gradient(135deg, #2E5090, #1B2A4A); color: white; font-weight: 600; }
+
 .btn-save:hover { box-shadow: 0 4px 12px rgba(46,80,144,0.4); }
 
 /* Save notification toast */
+
 .toast {
+
   position: fixed; bottom: 24px; right: 24px; background: var(--dark-blue); color: white;
+
   padding: 14px 24px; border-radius: 10px; font-size: 13px; font-weight: 500;
+
   box-shadow: 0 6px 20px rgba(0,0,0,0.25); z-index: 3000;
+
   opacity: 0; transform: translateY(20px); transition: all 0.3s ease;
+
   display: flex; align-items: center; gap: 10px;
+
 }
+
 .toast.show { opacity: 1; transform: translateY(0); }
+
 .toast.success { background: #2e7d32; }
+
 .toast.error { background: var(--accent-red); }
+
 .toast .toast-icon { font-size: 18px; }
 
 /* Save status indicator */
+
 .save-status {
+
   display: flex; align-items: center; gap: 6px; font-size: 12px; color: rgba(255,255,255,0.7);
+
 }
+
 .save-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+
 .save-dot.saved { background: #70AD47; }
+
 .save-dot.unsaved { background: #FFC000; animation: pulse 1.5s infinite; }
+
 @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
 .selection-info { font-size: 12px; color: var(--accent-orange); font-weight: 600; margin-left: 8px; display: inline-block; }
 
 /* Confirm dialog */
+
 .confirm-overlay {
+
   display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+
   z-index: 2000; justify-content: center; align-items: center;
+
 }
+
 .confirm-overlay.show { display: flex; }
+
 .confirm-box {
+
   background: white; border-radius: 16px; padding: 28px; width: 420px; max-width: 90vw;
+
   box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center;
+
 }
+
 .confirm-box h3 { color: var(--accent-red); margin-bottom: 12px; font-size: 18px; }
+
 .confirm-box p { color: var(--text-light); margin-bottom: 24px; font-size: 14px; }
+
 .confirm-box .confirm-actions { display: flex; justify-content: center; gap: 12px; }
 
 /* Dashboard export bar */
+
 .export-bar {
+
   display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 16px;
+
   padding: 12px 16px; background: var(--card-bg); border-radius: 10px; box-shadow: var(--shadow);
+
 }
 
 @media (max-width: 1024px) {
+
   .kpi-row { grid-template-columns: repeat(3, 1fr); }
+
   .charts-row { grid-template-columns: 1fr; }
+
   .lov-grid { grid-template-columns: 1fr 1fr; }
+
 }
+
 @media (max-width: 768px) {
+
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
+
   .form-grid { grid-template-columns: 1fr; }
+
   .lov-grid { grid-template-columns: 1fr; }
+
 }
+
 </style>
+
 </head>
+
 <body>
 
 <div class="header">
+
   <div>
+
     <h1>Oracle Fusion Task & Project Manager</h1>
+
     <div class="subtitle">Enterprise SCM & Procurement Implementation Tracker</div>
+
   </div>
+
   <div class="header-right">
+
     <select id="filterCompany" onchange="applyFilters()">
+
       <option value="">All Companies</option>
+
     </select>
+
     <select id="filterModule" onchange="applyFilters()">
+
       <option value="">All Modules</option>
+
     </select>
+
     <select id="filterStatus" onchange="applyFilters()">
+
       <option value="">All Statuses</option>
+
     </select>
+
     <input type="text" id="searchBox" placeholder="Search tasks..." oninput="applyFilters()" />
+
     <div style="border-left:1px solid rgba(255,255,255,0.3);padding-left:12px;display:flex;gap:8px;align-items:center">
+
       <button class="btn btn-save" onclick="manualSave()">Save</button>
+
       <div class="save-status" id="saveStatus">
+
         <span class="save-dot saved" id="saveDot"></span>
+
         <span id="saveText">Saved</span>
+
       </div>
+
     </div>
+
   </div>
+
 </div>
 
 <!-- Toast notification -->
+
 <div class="toast" id="toast"><span class="toast-icon"></span><span id="toastMsg"></span></div>
 
 <div class="container">
+
   <!-- Tabs -->
+
   <div class="tabs">
+
     <button class="tab active" onclick="switchTab('dashboard')">Dashboard</button>
+
     <button class="tab" onclick="switchTab('tasks')">Task Tracker</button>
+
     <button class="tab" onclick="switchTab('projects')">Projects</button>
+
     <button class="tab" onclick="switchTab('lov')">List of Values</button>
+
   </div>
 
   <!-- DASHBOARD TAB -->
+
   <div id="tab-dashboard">
+
     <div class="export-bar">
+
       <span style="color:var(--text-light);font-size:13px;align-self:center;margin-right:auto">Export Dashboard:</span>
+
       <button class="btn btn-export-green" onclick="exportDashboardExcel()">Export as Excel</button>
+
       <button class="btn btn-primary" onclick="exportDashboardPDF()">Export as PDF</button>
+
     </div>
+
     <div class="kpi-row">
+
       <div class="kpi-card blue" id="kpi-total"><div class="label">Total Tasks</div><div class="value" id="kpi-total-val">0</div><div class="change">All tracked tasks</div></div>
+
       <div class="kpi-card green" id="kpi-completed"><div class="label">Completed</div><div class="value" id="kpi-completed-val">0</div><div class="change" id="kpi-completed-pct"></div></div>
+
       <div class="kpi-card orange" id="kpi-progress"><div class="label">In Progress</div><div class="value" id="kpi-progress-val">0</div><div class="change">Currently active</div></div>
+
       <div class="kpi-card" id="kpi-hold" style="border-color:#FFC000"><div class="label">On Hold</div><div class="value" id="kpi-hold-val" style="color:#F0A500">0</div><div class="change">Blocked tasks</div></div>
+
       <div class="kpi-card red" id="kpi-critical"><div class="label">Critical Priority</div><div class="value" id="kpi-critical-val">0</div><div class="change">Needs attention</div></div>
+
       <div class="kpi-card blue" id="kpi-projects"><div class="label">Active Projects</div><div class="value" id="kpi-projects-val">0</div><div class="change">Portfolio overview</div></div>
+
     </div>
 
     <div class="charts-row">
+
       <div class="chart-card"><h3>Tasks by Status</h3><canvas id="chartStatus"></canvas></div>
+
       <div class="chart-card"><h3>Tasks by Priority</h3><canvas id="chartPriority"></canvas></div>
+
     </div>
+
     <div class="charts-row">
+
       <div class="chart-card"><h3>Tasks by Module</h3><canvas id="chartModule"></canvas></div>
+
       <div class="chart-card"><h3>Tasks by Company</h3><canvas id="chartCompany"></canvas></div>
+
     </div>
+
     <div class="charts-row">
+
       <div class="chart-card"><h3>Tasks by Team</h3><canvas id="chartTeam"></canvas></div>
+
       <div class="chart-card"><h3>Risk Distribution</h3><canvas id="chartRisk"></canvas></div>
+
     </div>
 
     <!-- Overdue & upcoming -->
+
     <div class="table-section">
+
       <h3>Overdue & Upcoming Tasks (Next 7 Days)</h3>
+
       <div class="table-scroll">
+
         <table><thead><tr><th>Task ID</th><th>Task</th><th>Module</th><th>Assigned To</th><th>Priority</th><th>Due Date</th><th>Status</th></tr></thead>
+
         <tbody id="upcomingBody"></tbody></table>
+
       </div>
+
     </div>
+
   </div>
 
   <!-- TASK TRACKER TAB -->
+
   <div id="tab-tasks" style="display:none">
+
     <div class="table-section">
+
       <div class="table-header">
+
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+
           <h3>Task Tracker <span id="taskCount" style="font-weight:normal;color:#999;font-size:13px"></span></h3>
+
           <span id="taskSelectionInfo" class="selection-info"></span>
+
         </div>
+
         <div class="actions">
+
           <button class="btn btn-primary" onclick="openTaskModal()">+ New Task</button>
+
           <button class="btn btn-secondary" onclick="exportCSV()">Export CSV</button>
+
           <button class="btn btn-danger" id="btnDeleteSelectedTasks" style="display:none" onclick="confirmDeleteSelectedTasks()">Delete Selected</button>
+
           <button class="btn btn-danger" onclick="confirmDeleteAllTasks()">Delete All</button>
+
         </div>
+
       </div>
+
       <div class="table-scroll">
+
         <table>
+
           <thead><tr>
+
             <th style="width:36px"><input type="checkbox" class="select-all-checkbox" id="selectAllTasks" onchange="toggleAllTaskCheckboxes(this.checked)" /></th>
+
             <th>ID</th><th>Project</th><th>Task</th><th>Module</th><th>Company</th>
+
             <th>Env</th><th>Assigned To</th><th>Team</th><th>Owner</th>
+
             <th>Priority</th><th>Status</th><th>Progress</th>
+
             <th>Start</th><th>Due</th><th>Hours</th><th>CR#</th><th>Sprint</th>
+
             <th>Risk</th><th>Milestone</th><th>Actions</th>
+
           </tr></thead>
+
           <tbody id="taskBody"></tbody>
+
         </table>
+
       </div>
+
     </div>
+
   </div>
 
   <!-- PROJECT TAB -->
+
   <div id="tab-projects" style="display:none">
+
     <div class="table-section">
+
       <div class="table-header">
+
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+
           <h3>Project Portfolio</h3>
+
           <span id="projSelectionInfo" class="selection-info"></span>
+
         </div>
+
         <div class="actions">
+
           <button class="btn btn-primary" onclick="openProjectModal()">+ New Project</button>
+
           <button class="btn btn-export-green" onclick="exportProjectsExcel()">Export Excel</button>
+
           <button class="btn btn-danger" id="btnDeleteSelectedProjects" style="display:none" onclick="confirmDeleteSelectedProjects()">Delete Selected</button>
+
           <button class="btn btn-danger" onclick="confirmDeleteAllProjects()">Delete All</button>
+
         </div>
+
       </div>
+
       <div class="table-scroll">
+
         <table>
+
           <thead><tr>
+
             <th style="width:36px"><input type="checkbox" class="select-all-checkbox" id="selectAllProjects" onchange="toggleAllProjectCheckboxes(this.checked)" /></th>
+
             <th>ID</th><th>Project</th><th>Module</th><th>Business Owner</th><th>PM</th>
+
             <th>Company</th><th>Phase</th><th>Status</th><th>Priority</th>
+
             <th>Start</th><th>Go-Live</th><th>Budget</th><th>Progress</th><th>Risk</th>
+
           </tr></thead>
+
           <tbody id="projectBody"></tbody>
+
         </table>
+
       </div>
+
     </div>
+
   </div>
 
   <!-- LOV TAB -->
+
   <div id="tab-lov" style="display:none">
+
     <div class="table-header" style="margin-bottom:20px">
+
       <h3 style="color:var(--dark-blue)">Manage List of Values</h3>
+
     </div>
+
     <div class="lov-grid" id="lovGrid"></div>
+
   </div>
+
 </div>
 
 <!-- Confirm Dialog -->
+
 <div class="confirm-overlay" id="confirmDialog">
+
   <div class="confirm-box">
+
     <h3 id="confirmTitle">Confirm Delete</h3>
+
     <p id="confirmMessage">Are you sure you want to delete?</p>
+
     <div class="confirm-actions">
+
       <button class="btn btn-secondary" onclick="closeConfirm()">Cancel</button>
-      <button class="btn btn-danger" id="confirmBtn" onclick="">Yes, Delete</button>
+
+      <button class="btn btn-danger" id="confirmBtn">Yes, Delete</button>
+
     </div>
+
   </div>
+
 </div>
 
 <!-- Task Modal -->
+
 <div class="modal-overlay" id="taskModal">
+
   <div class="modal">
+
     <h2 id="taskModalTitle">New Task</h2>
+
     <div class="form-grid">
+
       <div class="form-group"><label>Project</label><select id="fProject"></select></div>
+
       <div class="form-group"><label>Task Title</label><input id="fTitle" /></div>
+
       <div class="form-group"><label>Module</label><select id="fModule"></select></div>
+
       <div class="form-group"><label>Company</label><select id="fCompany"></select></div>
+
       <div class="form-group"><label>Environment</label><select id="fEnv"></select></div>
+
       <div class="form-group"><label>Assigned To</label><select id="fAssigned"></select></div>
+
       <div class="form-group"><label>Team</label><select id="fTeam"></select></div>
+
       <div class="form-group"><label>Business Owner</label><select id="fOwner"></select></div>
+
       <div class="form-group"><label>Priority</label><select id="fPriority"></select></div>
+
       <div class="form-group"><label>Status</label><select id="fStatus"></select></div>
+
       <div class="form-group"><label>% Complete</label><input id="fPct" type="number" min="0" max="100" value="0" /></div>
+
       <div class="form-group"><label>Start Date</label><input id="fStart" type="date" /></div>
+
       <div class="form-group"><label>Due Date</label><input id="fDue" type="date" /></div>
+
       <div class="form-group"><label>Hours Estimated</label><input id="fHoursEst" type="number" min="0" /></div>
+
       <div class="form-group"><label>CR Number</label><input id="fCR" placeholder="CR-XXXX" /></div>
+
       <div class="form-group"><label>Sprint</label><input id="fSprint" placeholder="Sprint 1" /></div>
+
       <div class="form-group"><label>Go-Live Date</label><input id="fGoLive" type="date" /></div>
+
       <div class="form-group"><label>Risk Level</label><select id="fRisk"></select></div>
+
       <div class="form-group"><label>Milestone</label><select id="fMilestone"></select></div>
+
       <div class="form-group"><label>Approval Status</label><select id="fApproval"></select></div>
+
       <div class="form-group full"><label>Description</label><textarea id="fDesc" rows="2"></textarea></div>
+
       <div class="form-group full"><label>Comments</label><textarea id="fComments" rows="2"></textarea></div>
+
     </div>
+
     <div class="modal-actions">
+
       <button class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+
       <button class="btn btn-primary" onclick="saveTask()">Save Task</button>
+
     </div>
+
   </div>
+
 </div>
 
 <!-- Project Modal -->
+
 <div class="modal-overlay" id="projectModal">
+
   <div class="modal">
+
     <h2>New Project</h2>
+
     <div class="form-grid">
+
       <div class="form-group"><label>Project Name</label><input id="fpName" /></div>
+
       <div class="form-group"><label>Module</label><select id="fpModule"></select></div>
+
       <div class="form-group"><label>Business Owner</label><select id="fpOwner"></select></div>
+
       <div class="form-group"><label>Project Manager</label><select id="fpPM"></select></div>
+
       <div class="form-group"><label>Company</label><select id="fpCompany"></select></div>
+
       <div class="form-group"><label>Phase</label><select id="fpPhase"></select></div>
+
       <div class="form-group"><label>Status</label><select id="fpStatus"></select></div>
+
       <div class="form-group"><label>Priority</label><select id="fpPriority"></select></div>
+
       <div class="form-group"><label>Start Date</label><input id="fpStart" type="date" /></div>
+
       <div class="form-group"><label>Target Go-Live</label><input id="fpGoLive" type="date" /></div>
+
       <div class="form-group"><label>Budget (SAR)</label><input id="fpBudget" type="number" /></div>
+
       <div class="form-group"><label>Risk Level</label><select id="fpRisk"></select></div>
+
       <div class="form-group full"><label>Description</label><textarea id="fpDesc" rows="2"></textarea></div>
+
     </div>
+
     <div class="modal-actions">
+
       <button class="btn btn-secondary" onclick="closeProjectModal()">Cancel</button>
+
       <button class="btn btn-primary" onclick="saveProject()">Save Project</button>
+
     </div>
+
   </div>
+
 </div>
 
 <script>
+
 // ══════════════════════════════════════════════
+
 // DATA STORE (LOVs)
+
 // ══════════════════════════════════════════════
+
 const LOV = {
+
   modules: [
+
     {code:"SCM-PO",name:"Procurement",cat:"SCM & Procurement"},
+
     {code:"SCM-INV",name:"Inventory Management",cat:"SCM & Procurement"},
+
     {code:"SCM-OM",name:"Order Management",cat:"SCM & Procurement"},
+
     {code:"SCM-MFG",name:"Manufacturing",cat:"SCM & Procurement"},
+
     {code:"SCM-PLN",name:"Supply Chain Planning",cat:"SCM & Procurement"},
+
     {code:"SCM-SRC",name:"Sourcing",cat:"SCM & Procurement"},
+
     {code:"SCM-RCV",name:"Receiving",cat:"SCM & Procurement"},
+
     {code:"SCM-QA",name:"Quality Management",cat:"SCM & Procurement"},
+
     {code:"SCM-CST",name:"Cost Management",cat:"SCM & Procurement"},
+
     {code:"SCM-LOG",name:"Logistics",cat:"SCM & Procurement"},
+
     {code:"FIN-GL",name:"General Ledger",cat:"Finance"},
+
     {code:"FIN-AP",name:"Accounts Payable",cat:"Finance"},
+
     {code:"FIN-AR",name:"Accounts Receivable",cat:"Finance"},
+
     {code:"FIN-FA",name:"Fixed Assets",cat:"Finance"},
+
     {code:"FIN-CM",name:"Cash Management",cat:"Finance"},
+
     {code:"HCM-CR",name:"Core HR",cat:"HCM"},
+
     {code:"HCM-PY",name:"Payroll",cat:"HCM"},
+
     {code:"PPM-PRJ",name:"Project Management",cat:"PPM"},
+
     {code:"INT-SOA",name:"Integration Cloud",cat:"Integration"},
+
     {code:"SEC-ADM",name:"Security Administration",cat:"Security"}
+
   ],
+
   companies: [
+
     "SRA Group Holdings","SRA Trading Co.","SRA Manufacturing","SRA Logistics DMCC",
+
     "SRA International","SRA Contracting","SRA Retail","SRA Real Estate","SRA Technology","SRA Energy Services"
+
   ],
+
   teams: [
+
     "SCM Implementation","Procurement Ops","Finance Core","AP/AR Team","Warehouse Ops",
+
     "Production Control","Integration Team","Security & Compliance","Quality Assurance",
+
     "PMO Office","Logistics Planning","Retail Systems"
+
   ],
+
   members: [
+
     "Ahmed Al-Rashid","Sara Al-Harbi","Khalid Mahmoud","Fatima Zahra","Omar Bin Said",
+
     "Tariq Hussain","Nadia Khan","Rami Al-Dosari","Layla Abbas","Yusuf Ibrahim",
+
     "Aisha Bint Nasser","Hassan Al-Mutairi","Mohammed Al-Qahtani","Noura Al-Shammari","Danial Nadeem"
+
   ],
+
   owners: [
+
     "Dr. Salman Al-Saud","Huda Al-Otaibi","Majid Al-Farsi","Lina Al-Zahrani",
+
     "Faisal Al-Ghamdi","Reem Al-Dosari","Abdullah Al-Harbi","Mona Al-Rashid"
+
   ],
+
   environments: ["DEV","SIT","UAT","PRE-PROD","PROD","DR"],
+
   statuses: ["New","In Progress","On Hold","In Review","Testing","Deployed","Completed","Cancelled"],
+
   priorities: ["Critical","High","Medium","Low"],
+
   risks: ["Low","Medium","High","Critical"],
+
   milestones: ["Design Complete","Build Complete","SIT Complete","UAT Sign-Off","Go-Live","Hypercare End","Phase Gate Review"],
+
   approvals: ["Pending","Approved","Rejected","Not Required"],
+
   phases: ["Initiation","Planning","Design","Build","Test","Deploy","Hypercare","Closed"]
+
 };
 
 // ══════════════════════════════════════════════
+
 // SAMPLE DATA GENERATORS
+
 // ══════════════════════════════════════════════
+
 const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+
 const randInt = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+
 const fmtDate = d => d.toISOString().split('T')[0];
+
 const addDays = (d,n) => { const r=new Date(d); r.setDate(r.getDate()+n); return r; };
 
 const projectNames = [
+
   "SCM Phase 2 Rollout","PO Automation","Inventory Optimization","Supplier Portal Launch",
+
   "OM Integration","Manufacturing Go-Live","Finance Consolidation","Security Hardening",
+
   "Data Migration Wave 3","Reporting Enhancement"
+
 ];
 
 let taskIdCounter = 50;
+
 const tasks = [];
+
 const baseDate = new Date(2026,2,1);
 
 for(let i=0; i<50; i++){
+
   const start = addDays(baseDate, randInt(0,30));
+
   const due = addDays(start, randInt(5,45));
+
   const stat = pick(LOV.statuses);
+
   const pct = pick([0,10,25,50,75,90,100]);
+
   const hrsEst = pick([4,8,16,24,40,80,120]);
+
   const mod = pick(LOV.modules);
+
   tasks.push({
+
     id: `TSK-2026${String(i+1).padStart(4,'0')}`,
+
     project: pick(projectNames),
+
     title: `${pick(["Configure","Test","Migrate","Deploy","Review"])} ${mod.name} for ${pick(LOV.companies)}`,
+
     description: "",
+
     module: mod.name,
+
     company: pick(LOV.companies),
+
     env: pick(LOV.environments),
+
     assigned: pick(LOV.members),
+
     team: pick(LOV.teams),
+
     owner: pick(LOV.owners),
+
     priority: pick(LOV.priorities),
+
     status: stat,
+
     pct: pct,
+
     start: fmtDate(start),
+
     due: fmtDate(due),
+
     hrsEst: hrsEst,
+
     hrsLog: Math.round(hrsEst * pct/100),
+
     cr: Math.random()>0.3 ? `CR-${randInt(1000,9999)}` : "-",
+
     sprint: `Sprint ${randInt(1,8)}`,
+
     goLive: fmtDate(addDays(new Date(2026,5,1), randInt(0,90))),
+
     dep: "-",
+
     risk: pick(LOV.risks),
+
     riskDesc: "",
+
     milestone: pick(LOV.milestones),
+
     approval: pick(LOV.approvals),
+
     comments: ""
+
   });
+
 }
 
 const projects = projectNames.map((name,i) => {
+
   const start = addDays(baseDate, -randInt(0,60));
+
   const goLive = addDays(start, randInt(90,180));
+
   const budget = pick([250000,500000,750000,1000000,1500000,2000000]);
+
   const totalTasks = randInt(15,60);
+
   const completed = randInt(0,totalTasks);
+
   return {
+
     id: `PRJ-2026${String(i+1).padStart(3,'0')}`,
+
     name, desc: `Oracle Fusion implementation - ${name}`,
+
     module: pick(LOV.modules).name,
+
     owner: pick(LOV.owners),
+
     pm: pick(LOV.members),
+
     company: pick(LOV.companies),
+
     phase: pick(LOV.phases),
+
     status: pick(LOV.statuses.slice(0,5)),
+
     priority: pick(LOV.priorities),
+
     start: fmtDate(start), goLive: fmtDate(goLive),
+
     budget, actual: Math.round(budget*(.6+Math.random()*.6)),
+
     totalTasks, completed,
+
     risk: pick(LOV.risks)
+
   };
+
 });
 
 // ══════════════════════════════════════════════
+
 // RENDERING
+
 // ══════════════════════════════════════════════
+
 function getBadgeClass(status) {
+
   const map = { "New":"badge-new","In Progress":"badge-progress","On Hold":"badge-hold","In Review":"badge-review","Testing":"badge-testing","Deployed":"badge-deployed","Completed":"badge-completed","Cancelled":"badge-cancelled" };
+
   return map[status] || "badge-new";
+
 }
+
 function getPriorityClass(p) {
+
   return `priority-${p.toLowerCase()}`;
+
 }
+
 function progressBar(pct) {
+
   const color = pct >= 80 ? '#70AD47' : pct >= 50 ? '#ED7D31' : pct >= 25 ? '#FFC000' : '#FF4444';
+
   return `<div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${color}"></div></div> ${pct}%`;
+
 }
 
 function renderKPIs(filteredTasks) {
+
   const t = filteredTasks;
+
   document.getElementById('kpi-total-val').textContent = t.length;
+
   const comp = t.filter(x=>x.status==='Completed').length;
+
   document.getElementById('kpi-completed-val').textContent = comp;
+
   document.getElementById('kpi-completed-pct').textContent = t.length ? `${Math.round(comp/t.length*100)}% completion rate` : '';
+
   document.getElementById('kpi-progress-val').textContent = t.filter(x=>x.status==='In Progress').length;
+
   document.getElementById('kpi-hold-val').textContent = t.filter(x=>x.status==='On Hold').length;
+
   document.getElementById('kpi-critical-val').textContent = t.filter(x=>x.priority==='Critical').length;
+
   document.getElementById('kpi-projects-val').textContent = projects.length;
+
 }
 
 function renderTasks(filtered) {
+
   const body = document.getElementById('taskBody');
+
   document.getElementById('taskCount').textContent = `(${filtered.length} tasks)`;
+
   document.getElementById('selectAllTasks').checked = false;
+
   updateTaskSelectionInfo();
+
   body.innerHTML = filtered.map(t => `<tr>
+
     <td><input type="checkbox" class="row-checkbox task-cb" data-id="${t.id}" onchange="updateTaskSelectionInfo()" /></td>
+
     <td><strong>${t.id}</strong></td><td>${t.project}</td><td>${t.title}</td>
+
     <td>${t.module}</td><td>${t.company}</td><td>${t.env}</td>
+
     <td>${t.assigned}</td><td>${t.team}</td><td>${t.owner}</td>
+
     <td class="${getPriorityClass(t.priority)}">${t.priority}</td>
+
     <td><span class="badge ${getBadgeClass(t.status)}">${t.status}</span></td>
+
     <td>${progressBar(t.pct)}</td>
+
     <td>${t.start}</td><td>${t.due}</td><td>${t.hrsLog}/${t.hrsEst}h</td>
+
     <td>${t.cr}</td><td>${t.sprint}</td>
+
     <td class="${getPriorityClass(t.risk)}">${t.risk}</td>
+
     <td>${t.milestone}</td>
+
     <td><button class="btn btn-secondary" style="padding:4px 8px;font-size:11px" onclick="editTask('${t.id}')">Edit</button></td>
+
   </tr>`).join('');
+
 }
 
 function renderProjects() {
+
   const body = document.getElementById('projectBody');
+
   if(document.getElementById('selectAllProjects')) document.getElementById('selectAllProjects').checked = false;
+
   updateProjectSelectionInfo();
+
   body.innerHTML = projects.map(p => {
+
     const pct = p.totalTasks ? Math.round(p.completed/p.totalTasks*100) : 0;
+
     return `<tr>
+
       <td><input type="checkbox" class="row-checkbox proj-cb" data-id="${p.id}" onchange="updateProjectSelectionInfo()" /></td>
+
       <td><strong>${p.id}</strong></td><td>${p.name}</td><td>${p.module}</td>
+
       <td>${p.owner}</td><td>${p.pm}</td><td>${p.company}</td>
+
       <td>${p.phase}</td>
+
       <td><span class="badge ${getBadgeClass(p.status)}">${p.status}</span></td>
+
       <td class="${getPriorityClass(p.priority)}">${p.priority}</td>
+
       <td>${p.start}</td><td>${p.goLive}</td>
+
       <td>${(p.budget/1000).toFixed(0)}K SAR</td>
+
       <td>${progressBar(pct)}</td>
+
       <td class="${getPriorityClass(p.risk)}">${p.risk}</td>
+
     </tr>`;
+
   }).join('');
+
 }
 
 function renderUpcoming(filtered) {
+
   const today = new Date(); today.setHours(0,0,0,0);
+
   const week = addDays(today, 7);
+
   const upcoming = filtered.filter(t => {
+
     if(t.status==='Completed'||t.status==='Cancelled') return false;
+
     const d = new Date(t.due);
+
     return d <= week;
+
   }).sort((a,b) => new Date(a.due)-new Date(b.due)).slice(0,15);
+
   document.getElementById('upcomingBody').innerHTML = upcoming.map(t => {
+
     const overdue = new Date(t.due) < today;
+
     return `<tr style="${overdue?'background:#fff5f5':''}">
+
       <td><strong>${t.id}</strong></td><td>${t.title}</td><td>${t.module}</td>
+
       <td>${t.assigned}</td><td class="${getPriorityClass(t.priority)}">${t.priority}</td>
+
       <td style="${overdue?'color:var(--accent-red);font-weight:700':''}">${t.due}${overdue?' (OVERDUE)':''}</td>
+
       <td><span class="badge ${getBadgeClass(t.status)}">${t.status}</span></td>
+
     </tr>`;
+
   }).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;color:#999">No upcoming or overdue tasks</td></tr>';
+
 }
 
 // ══════════════════════════════════════════════
+
 // CHARTS
+
 // ══════════════════════════════════════════════
+
 let charts = {};
+
 function countBy(arr, key) {
+
   const map = {};
+
   arr.forEach(x => { const v = x[key]; map[v] = (map[v]||0)+1; });
+
   return map;
+
 }
 
 const chartColors = ['#1B2A4A','#2E5090','#4A90D9','#70AD47','#ED7D31','#FFC000','#FF4444','#9DC3E6','#548235','#808080','#BDD7EE','#D6E4F0'];
 
 function renderCharts(filtered) {
+
   Object.values(charts).forEach(c => c.destroy());
+
   charts = {};
 
   // Status
+
   const statusMap = countBy(filtered, 'status');
+
   const statusColors = {'New':'#2E5090','In Progress':'#ED7D31','On Hold':'#FFC000','In Review':'#9DC3E6','Testing':'#BDD7EE','Deployed':'#70AD47','Completed':'#548235','Cancelled':'#808080'};
+
   charts.status = new Chart(document.getElementById('chartStatus'), {
+
     type:'bar', data:{labels:Object.keys(statusMap),datasets:[{data:Object.values(statusMap),backgroundColor:Object.keys(statusMap).map(s=>statusColors[s]||'#2E5090')}]},
+
     options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+
   });
 
   // Priority
+
   const priMap = countBy(filtered, 'priority');
+
   const priColors = {'Critical':'#FF4444','High':'#ED7D31','Medium':'#FFC000','Low':'#70AD47'};
+
   charts.priority = new Chart(document.getElementById('chartPriority'), {
+
     type:'doughnut', data:{labels:Object.keys(priMap),datasets:[{data:Object.values(priMap),backgroundColor:Object.keys(priMap).map(p=>priColors[p]||'#999')}]},
+
     options:{responsive:true,plugins:{legend:{position:'right'}}}
+
   });
 
   // Module
+
   const modMap = countBy(filtered, 'module');
+
   const sorted = Object.entries(modMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
   charts.module = new Chart(document.getElementById('chartModule'), {
+
     type:'bar', data:{labels:sorted.map(s=>s[0]),datasets:[{data:sorted.map(s=>s[1]),backgroundColor:chartColors}]},
+
     options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}},indexAxis:'y'}
+
   });
 
   // Company
+
   const compMap = countBy(filtered, 'company');
+
   charts.company = new Chart(document.getElementById('chartCompany'), {
+
     type:'pie', data:{labels:Object.keys(compMap),datasets:[{data:Object.values(compMap),backgroundColor:chartColors}]},
+
     options:{responsive:true,plugins:{legend:{position:'right',labels:{font:{size:11}}}}}
+
   });
 
   // Team
+
   const teamMap = countBy(filtered, 'team');
+
   const teamSorted = Object.entries(teamMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+
   charts.team = new Chart(document.getElementById('chartTeam'), {
+
     type:'bar', data:{labels:teamSorted.map(s=>s[0]),datasets:[{data:teamSorted.map(s=>s[1]),backgroundColor:chartColors.slice(2)}]},
+
     options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}
+
   });
 
   // Risk
+
   const riskMap = countBy(filtered, 'risk');
+
   const riskColors = {'Low':'#70AD47','Medium':'#FFC000','High':'#ED7D31','Critical':'#FF4444'};
+
   charts.risk = new Chart(document.getElementById('chartRisk'), {
+
     type:'doughnut', data:{labels:Object.keys(riskMap),datasets:[{data:Object.values(riskMap),backgroundColor:Object.keys(riskMap).map(r=>riskColors[r]||'#999')}]},
+
     options:{responsive:true,plugins:{legend:{position:'right'}}}
+
   });
+
 }
 
 // ══════════════════════════════════════════════
+
 // FILTERS
+
 // ══════════════════════════════════════════════
+
 function populateFilters() {
+
   const fc = document.getElementById('filterCompany');
+
   LOV.companies.forEach(c => { const o=document.createElement('option'); o.value=c; o.textContent=c; fc.appendChild(o); });
+
   const fm = document.getElementById('filterModule');
+
   LOV.modules.forEach(m => { const o=document.createElement('option'); o.value=m.name; o.textContent=m.name; fm.appendChild(o); });
+
   const fs = document.getElementById('filterStatus');
+
   LOV.statuses.forEach(s => { const o=document.createElement('option'); o.value=s; o.textContent=s; fs.appendChild(o); });
+
 }
 
 function getFilteredTasks() {
+
   const company = document.getElementById('filterCompany').value;
+
   const module = document.getElementById('filterModule').value;
+
   const status = document.getElementById('filterStatus').value;
+
   const search = document.getElementById('searchBox').value.toLowerCase();
+
   return tasks.filter(t => {
+
     if(company && t.company !== company) return false;
+
     if(module && t.module !== module) return false;
+
     if(status && t.status !== status) return false;
+
     if(search && !(t.id+t.title+t.project+t.assigned+t.module+t.company+t.cr).toLowerCase().includes(search)) return false;
+
     return true;
+
   });
+
 }
 
 function applyFilters() {
+
   const filtered = getFilteredTasks();
+
   renderKPIs(filtered);
+
   renderTasks(filtered);
+
   renderCharts(filtered);
+
   renderUpcoming(filtered);
+
 }
 
 // ══════════════════════════════════════════════
+
 // TABS
+
 // ══════════════════════════════════════════════
+
 function switchTab(name) {
+
   ['dashboard','tasks','projects','lov'].forEach(t => {
+
     document.getElementById('tab-'+t).style.display = t===name ? 'block':'none';
+
   });
+
   document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+
   event.target.classList.add('active');
+
   if(name==='lov') renderLOV();
+
 }
 
 // ══════════════════════════════════════════════
+
 // TASK MODAL
+
 // ══════════════════════════════════════════════
+
 let editingTaskId = null;
 
 function populateSelect(id, items) {
+
   const sel = document.getElementById(id);
+
   sel.innerHTML = '<option value="">-- Select --</option>';
+
   items.forEach(i => { const o=document.createElement('option'); o.value=typeof i==='object'?i.name:i; o.textContent=typeof i==='object'?i.name:i; sel.appendChild(o); });
+
 }
 
 function openTaskModal(taskId) {
+
   editingTaskId = taskId || null;
+
   document.getElementById('taskModalTitle').textContent = taskId ? 'Edit Task' : 'New Task';
+
   populateSelect('fProject', projectNames);
+
   populateSelect('fModule', LOV.modules);
+
   populateSelect('fCompany', LOV.companies);
+
   populateSelect('fEnv', LOV.environments);
+
   populateSelect('fAssigned', LOV.members);
+
   populateSelect('fTeam', LOV.teams);
+
   populateSelect('fOwner', LOV.owners);
+
   populateSelect('fPriority', LOV.priorities);
+
   populateSelect('fStatus', LOV.statuses);
+
   populateSelect('fRisk', LOV.risks);
+
   populateSelect('fMilestone', LOV.milestones);
+
   populateSelect('fApproval', LOV.approvals);
 
   if(taskId) {
+
     const t = tasks.find(x => x.id === taskId);
+
     if(t) {
+
       document.getElementById('fProject').value = t.project;
+
       document.getElementById('fTitle').value = t.title;
+
       document.getElementById('fModule').value = t.module;
+
       document.getElementById('fCompany').value = t.company;
+
       document.getElementById('fEnv').value = t.env;
+
       document.getElementById('fAssigned').value = t.assigned;
+
       document.getElementById('fTeam').value = t.team;
+
       document.getElementById('fOwner').value = t.owner;
+
       document.getElementById('fPriority').value = t.priority;
+
       document.getElementById('fStatus').value = t.status;
+
       document.getElementById('fPct').value = t.pct;
+
       document.getElementById('fStart').value = t.start;
+
       document.getElementById('fDue').value = t.due;
+
       document.getElementById('fHoursEst').value = t.hrsEst;
+
       document.getElementById('fCR').value = t.cr;
+
       document.getElementById('fSprint').value = t.sprint;
+
       document.getElementById('fGoLive').value = t.goLive;
+
       document.getElementById('fRisk').value = t.risk;
+
       document.getElementById('fMilestone').value = t.milestone;
+
       document.getElementById('fApproval').value = t.approval;
+
       document.getElementById('fDesc').value = t.description;
+
       document.getElementById('fComments').value = t.comments;
+
     }
+
   } else {
+
     document.querySelectorAll('#taskModal input, #taskModal textarea').forEach(el => el.value = '');
+
     document.getElementById('fPct').value = 0;
+
   }
+
   document.getElementById('taskModal').classList.add('show');
+
 }
+
 function closeTaskModal() { document.getElementById('taskModal').classList.remove('show'); editingTaskId=null; }
+
 function editTask(id) { openTaskModal(id); }
 
 function saveTask() {
+
   const data = {
+
     project: document.getElementById('fProject').value,
+
     title: document.getElementById('fTitle').value,
+
     module: document.getElementById('fModule').value,
+
     company: document.getElementById('fCompany').value,
+
     env: document.getElementById('fEnv').value,
+
     assigned: document.getElementById('fAssigned').value,
+
     team: document.getElementById('fTeam').value,
+
     owner: document.getElementById('fOwner').value,
+
     priority: document.getElementById('fPriority').value,
+
     status: document.getElementById('fStatus').value,
+
     pct: parseInt(document.getElementById('fPct').value)||0,
+
     start: document.getElementById('fStart').value,
+
     due: document.getElementById('fDue').value,
+
     hrsEst: parseInt(document.getElementById('fHoursEst').value)||0,
+
     hrsLog: Math.round((parseInt(document.getElementById('fHoursEst').value)||0) * (parseInt(document.getElementById('fPct').value)||0)/100),
+
     cr: document.getElementById('fCR').value || '-',
+
     sprint: document.getElementById('fSprint').value,
+
     goLive: document.getElementById('fGoLive').value,
+
     risk: document.getElementById('fRisk').value,
+
     milestone: document.getElementById('fMilestone').value,
+
     approval: document.getElementById('fApproval').value,
+
     description: document.getElementById('fDesc').value,
+
     comments: document.getElementById('fComments').value
+
   };
 
   if(editingTaskId) {
+
     const idx = tasks.findIndex(t => t.id === editingTaskId);
+
     if(idx >= 0) Object.assign(tasks[idx], data);
+
   } else {
+
     taskIdCounter++;
+
     data.id = `TSK-2026${String(taskIdCounter).padStart(4,'0')}`;
+
     data.dep = '-';
+
     data.riskDesc = '';
+
     tasks.unshift(data);
+
   }
+
   closeTaskModal();
+
   applyFilters();
+
+  if(typeof markDirty === 'function') markDirty();
+
 }
 
 // ══════════════════════════════════════════════
+
 // PROJECT MODAL
+
 // ══════════════════════════════════════════════
+
 function openProjectModal() {
+
   populateSelect('fpModule', LOV.modules);
+
   populateSelect('fpOwner', LOV.owners);
+
   populateSelect('fpPM', LOV.members);
+
   populateSelect('fpCompany', LOV.companies);
+
   populateSelect('fpPhase', LOV.phases);
+
   populateSelect('fpStatus', LOV.statuses);
+
   populateSelect('fpPriority', LOV.priorities);
+
   populateSelect('fpRisk', LOV.risks);
+
   document.getElementById('projectModal').classList.add('show');
+
 }
+
 function closeProjectModal() { document.getElementById('projectModal').classList.remove('show'); }
+
 function saveProject() {
+
   const p = {
+
     id: `PRJ-2026${String(projects.length+1).padStart(3,'0')}`,
+
     name: document.getElementById('fpName').value,
+
     desc: document.getElementById('fpDesc').value,
+
     module: document.getElementById('fpModule').value,
+
     owner: document.getElementById('fpOwner').value,
+
     pm: document.getElementById('fpPM').value,
+
     company: document.getElementById('fpCompany').value,
+
     phase: document.getElementById('fpPhase').value,
+
     status: document.getElementById('fpStatus').value,
+
     priority: document.getElementById('fpPriority').value,
+
     start: document.getElementById('fpStart').value,
+
     goLive: document.getElementById('fpGoLive').value,
+
     budget: parseInt(document.getElementById('fpBudget').value)||0,
+
     actual: 0, totalTasks: 0, completed: 0,
+
     risk: document.getElementById('fpRisk').value
+
   };
+
   projects.unshift(p);
+
   closeProjectModal();
+
   renderProjects();
+
   applyFilters();
+
+  if(typeof markDirty === 'function') markDirty();
+
 }
 
 // ══════════════════════════════════════════════
+
 // LOV MANAGEMENT
+
 // ══════════════════════════════════════════════
+
 function renderLOV() {
+
   const lovDefs = [
+
     {key:'modules', title:'Oracle Fusion Modules', display: LOV.modules.map(m=>m.name)},
+
     {key:'companies', title:'Companies', display: LOV.companies},
+
     {key:'teams', title:'Teams', display: LOV.teams},
+
     {key:'members', title:'Team Members', display: LOV.members},
+
     {key:'owners', title:'Business Owners', display: LOV.owners},
+
     {key:'environments', title:'Environments', display: LOV.environments},
+
     {key:'statuses', title:'Task Statuses', display: LOV.statuses},
+
     {key:'priorities', title:'Priorities', display: LOV.priorities},
+
     {key:'risks', title:'Risk Levels', display: LOV.risks},
+
     {key:'milestones', title:'Milestones', display: LOV.milestones},
+
     {key:'approvals', title:'Approval Statuses', display: LOV.approvals},
+
     {key:'phases', title:'Project Phases', display: LOV.phases}
+
   ];
 
   document.getElementById('lovGrid').innerHTML = lovDefs.map(lov => `
+
     <div class="lov-card">
+
       <h4>${lov.title} <span style="color:#999;font-weight:normal;font-size:12px">(${lov.display.length})</span></h4>
+
       ${lov.display.map((item,i) => `
+
         <div class="lov-item">
+
           <span>${item}</span>
+
           <span class="delete-lov" onclick="removeLOV('${lov.key}',${i},'${lov.key==='modules'?'obj':'str'}')" title="Remove">&times;</span>
+
         </div>
+
       `).join('')}
+
       <div class="lov-add">
+
         <input id="lovAdd_${lov.key}" placeholder="Add new..." onkeydown="if(event.key==='Enter')addLOV('${lov.key}','${lov.key==='modules'?'obj':'str'}')" />
+
         <button onclick="addLOV('${lov.key}','${lov.key==='modules'?'obj':'str'}')">+</button>
+
       </div>
+
     </div>
+
   `).join('');
+
 }
 
 function addLOV(key, type) {
+
   const input = document.getElementById(`lovAdd_${key}`);
+
   const val = input.value.trim();
+
   if(!val) return;
+
   if(type === 'obj') {
+
     LOV[key].push({code: val.substring(0,6).toUpperCase(), name: val, cat: 'Custom'});
+
   } else {
+
     LOV[key].push(val);
+
   }
+
   input.value = '';
+
   renderLOV();
+
 }
 
 function removeLOV(key, idx, type) {
+
   if(type === 'obj') LOV[key].splice(idx, 1);
+
   else LOV[key].splice(idx, 1);
+
   renderLOV();
+
 }
 
 // ══════════════════════════════════════════════
+
 // EXPORT CSV
+
 // ══════════════════════════════════════════════
+
 function exportCSV() {
+
   const filtered = getFilteredTasks();
+
   const headers = ['ID','Project','Title','Module','Company','Env','Assigned To','Team','Owner','Priority','Status','% Complete','Start','Due','Hours Est','Hours Log','CR#','Sprint','Go-Live','Risk','Milestone'];
+
   const rows = filtered.map(t => [t.id,t.project,`"${t.title}"`,t.module,t.company,t.env,t.assigned,t.team,t.owner,t.priority,t.status,t.pct,t.start,t.due,t.hrsEst,t.hrsLog,t.cr,t.sprint,t.goLive,t.risk,t.milestone]);
+
   const csv = [headers.join(','), ...rows.map(r=>r.join(','))].join('\n');
+
   const blob = new Blob([csv], {type:'text/csv'});
+
   const a = document.createElement('a');
+
   a.href = URL.createObjectURL(blob);
+
   a.download = `oracle_fusion_tasks_${fmtDate(new Date())}.csv`;
+
   a.click();
+
 }
 
 // ══════════════════════════════════════════════
+
 // CHECKBOX SELECTION — TASKS
+
 // ══════════════════════════════════════════════
+
 function toggleAllTaskCheckboxes(checked) {
+
   document.querySelectorAll('.task-cb').forEach(cb => cb.checked = checked);
+
   updateTaskSelectionInfo();
+
 }
+
 function getSelectedTaskIds() {
+
   return [...document.querySelectorAll('.task-cb:checked')].map(cb => cb.dataset.id);
+
 }
+
 function updateTaskSelectionInfo() {
+
   const selected = getSelectedTaskIds().length;
+
   const info = document.getElementById('taskSelectionInfo');
+
   const btn = document.getElementById('btnDeleteSelectedTasks');
+
   if(info) info.textContent = selected > 0 ? `${selected} selected` : '';
+
   if(btn) btn.style.display = selected > 0 ? 'inline-block' : 'none';
+
 }
 
 // ══════════════════════════════════════════════
+
 // CHECKBOX SELECTION — PROJECTS
+
 // ══════════════════════════════════════════════
+
 function toggleAllProjectCheckboxes(checked) {
+
   document.querySelectorAll('.proj-cb').forEach(cb => cb.checked = checked);
+
   updateProjectSelectionInfo();
+
 }
+
 function getSelectedProjectIds() {
+
   return [...document.querySelectorAll('.proj-cb:checked')].map(cb => cb.dataset.id);
+
 }
+
 function updateProjectSelectionInfo() {
+
   const selected = getSelectedProjectIds().length;
+
   const info = document.getElementById('projSelectionInfo');
+
   const btn = document.getElementById('btnDeleteSelectedProjects');
+
   if(info) info.textContent = selected > 0 ? `${selected} selected` : '';
+
   if(btn) btn.style.display = selected > 0 ? 'inline-block' : 'none';
+
 }
 
 // ══════════════════════════════════════════════
+
 // CONFIRM DIALOG
+
 // ══════════════════════════════════════════════
+
 let confirmCallback = null;
+
 function showConfirm(title, message, callback) {
+
   document.getElementById('confirmTitle').textContent = title;
+
   document.getElementById('confirmMessage').textContent = message;
+
   confirmCallback = callback;
-  document.getElementById('confirmBtn').onclick = () => { closeConfirm(); if(confirmCallback) confirmCallback(); };
+
+  document.getElementById('confirmBtn').onclick = function() {
+
+    const cb = confirmCallback;
+
+    confirmCallback = null;
+
+    document.getElementById('confirmDialog').classList.remove('show');
+
+    if(cb) cb();
+
+  };
+
   document.getElementById('confirmDialog').classList.add('show');
+
 }
+
 function closeConfirm() {
+
   document.getElementById('confirmDialog').classList.remove('show');
+
   confirmCallback = null;
+
 }
 
 // ══════════════════════════════════════════════
+
 // DELETE TASKS
+
 // ══════════════════════════════════════════════
+
 function confirmDeleteSelectedTasks() {
+
   const ids = getSelectedTaskIds();
+
   if(ids.length === 0) return;
-  showConfirm('Delete Selected Tasks', `Are you sure you want to delete ${ids.length} selected task(s)? This action cannot be undone.`, () => {
+
+  showConfirm('Delete Selected Tasks', `Are you sure you want to delete ${ids.length} selected task(s)? This action cannot be undone.`, function() {
+
     const idSet = new Set(ids);
+
     for(let i = tasks.length - 1; i >= 0; i--) {
+
       if(idSet.has(tasks[i].id)) tasks.splice(i, 1);
+
     }
+
     applyFilters();
+
+    if(typeof markDirty === 'function') markDirty();
+
   });
+
 }
+
 function confirmDeleteAllTasks() {
+
   const filtered = getFilteredTasks();
+
   if(filtered.length === 0) return;
+
   const isFiltered = filtered.length < tasks.length;
+
   const label = isFiltered ? `${filtered.length} filtered task(s)` : `ALL ${tasks.length} task(s)`;
-  showConfirm('Delete All Tasks', `Are you sure you want to delete ${label}? This action cannot be undone.`, () => {
+
+  showConfirm('Delete All Tasks', `Are you sure you want to delete ${label}? This action cannot be undone.`, function() {
+
     if(isFiltered) {
+
       const idSet = new Set(filtered.map(t => t.id));
+
       for(let i = tasks.length - 1; i >= 0; i--) {
+
         if(idSet.has(tasks[i].id)) tasks.splice(i, 1);
+
       }
+
     } else {
+
       tasks.length = 0;
+
     }
+
     applyFilters();
+
+    if(typeof markDirty === 'function') markDirty();
+
   });
+
 }
 
 // ══════════════════════════════════════════════
+
 // DELETE PROJECTS
+
 // ══════════════════════════════════════════════
+
 function confirmDeleteSelectedProjects() {
+
   const ids = getSelectedProjectIds();
+
   if(ids.length === 0) return;
-  showConfirm('Delete Selected Projects', `Are you sure you want to delete ${ids.length} selected project(s)? This action cannot be undone.`, () => {
+
+  showConfirm('Delete Selected Projects', `Are you sure you want to delete ${ids.length} selected project(s)? This action cannot be undone.`, function() {
+
     const idSet = new Set(ids);
+
     for(let i = projects.length - 1; i >= 0; i--) {
+
       if(idSet.has(projects[i].id)) projects.splice(i, 1);
+
     }
+
     renderProjects();
+
     applyFilters();
+
+    if(typeof markDirty === 'function') markDirty();
+
   });
+
 }
+
 function confirmDeleteAllProjects() {
+
   if(projects.length === 0) return;
-  showConfirm('Delete All Projects', `Are you sure you want to delete ALL ${projects.length} project(s)? This action cannot be undone.`, () => {
+
+  showConfirm('Delete All Projects', `Are you sure you want to delete ALL ${projects.length} project(s)? This action cannot be undone.`, function() {
+
     projects.length = 0;
+
     renderProjects();
+
     applyFilters();
+
+    if(typeof markDirty === 'function') markDirty();
+
   });
+
 }
 
 // ══════════════════════════════════════════════
+
 // EXPORT PROJECTS TO EXCEL
+
 // ══════════════════════════════════════════════
+
 function exportProjectsExcel() {
+
   const headers = ['ID','Project','Description','Module','Business Owner','PM','Company','Phase','Status','Priority','Start','Go-Live','Budget (SAR)','Actual Cost (SAR)','Total Tasks','Completed','% Complete','Risk'];
+
   const rows = projects.map(p => {
+
     const pct = p.totalTasks ? Math.round(p.completed/p.totalTasks*100) : 0;
+
     return [p.id, p.name, p.desc, p.module, p.owner, p.pm, p.company, p.phase, p.status, p.priority, p.start, p.goLive, p.budget, p.actual, p.totalTasks, p.completed, pct+'%', p.risk];
+
   });
+
   const wsData = [headers, ...rows];
+
   const wsSheet = XLSX.utils.aoa_to_sheet(wsData);
+
   // Column widths
+
   wsSheet['!cols'] = headers.map((h,i) => ({wch: i===2 ? 40 : i===1 ? 25 : 16}));
+
   const wbExport = XLSX.utils.book_new();
+
   XLSX.utils.book_append_sheet(wbExport, wsSheet, 'Projects');
+
   XLSX.writeFile(wbExport, `oracle_fusion_projects_${fmtDate(new Date())}.xlsx`);
+
 }
 
 // ══════════════════════════════════════════════
+
 // EXPORT DASHBOARD
+
 // ══════════════════════════════════════════════
+
 function exportDashboardExcel() {
+
   const wbExport = XLSX.utils.book_new();
+
   const filtered = getFilteredTasks();
 
   // KPI Sheet
+
   const kpiData = [
+
     ['KPI','Value'],
+
     ['Total Tasks', filtered.length],
+
     ['Completed', filtered.filter(t=>t.status==='Completed').length],
+
     ['In Progress', filtered.filter(t=>t.status==='In Progress').length],
+
     ['On Hold', filtered.filter(t=>t.status==='On Hold').length],
+
     ['Critical Priority', filtered.filter(t=>t.priority==='Critical').length],
+
     ['Active Projects', projects.length]
+
   ];
+
   const wsKPI = XLSX.utils.aoa_to_sheet(kpiData);
+
   wsKPI['!cols'] = [{wch:20},{wch:12}];
+
   XLSX.utils.book_append_sheet(wbExport, wsKPI, 'KPIs');
 
   // Status breakdown
+
   const statusMap = countBy(filtered, 'status');
+
   const statusData = [['Status','Count'], ...Object.entries(statusMap)];
+
   XLSX.utils.book_append_sheet(wbExport, XLSX.utils.aoa_to_sheet(statusData), 'By Status');
 
   // Priority breakdown
+
   const priMap = countBy(filtered, 'priority');
+
   const priData = [['Priority','Count'], ...Object.entries(priMap)];
+
   XLSX.utils.book_append_sheet(wbExport, XLSX.utils.aoa_to_sheet(priData), 'By Priority');
 
   // Module breakdown
+
   const modMap = countBy(filtered, 'module');
+
   const modData = [['Module','Count'], ...Object.entries(modMap).sort((a,b)=>b[1]-a[1])];
+
   XLSX.utils.book_append_sheet(wbExport, XLSX.utils.aoa_to_sheet(modData), 'By Module');
 
   // Company breakdown
+
   const compMap = countBy(filtered, 'company');
+
   const compData = [['Company','Count'], ...Object.entries(compMap).sort((a,b)=>b[1]-a[1])];
+
   XLSX.utils.book_append_sheet(wbExport, XLSX.utils.aoa_to_sheet(compData), 'By Company');
 
   // All tasks
+
   const taskHeaders = ['ID','Project','Title','Module','Company','Env','Assigned To','Team','Owner','Priority','Status','% Complete','Start','Due','Hours Est','Hours Log','CR#','Sprint','Risk','Milestone'];
+
   const taskRows = filtered.map(t => [t.id,t.project,t.title,t.module,t.company,t.env,t.assigned,t.team,t.owner,t.priority,t.status,t.pct+'%',t.start,t.due,t.hrsEst,t.hrsLog,t.cr,t.sprint,t.risk,t.milestone]);
+
   const wsT = XLSX.utils.aoa_to_sheet([taskHeaders, ...taskRows]);
+
   wsT['!cols'] = taskHeaders.map((h,i) => ({wch: i===2 ? 35 : 16}));
+
   XLSX.utils.book_append_sheet(wbExport, wsT, 'All Tasks');
 
   // Projects
+
   const projHeaders = ['ID','Project','Module','Owner','PM','Company','Phase','Status','Priority','Start','Go-Live','Budget','Risk'];
+
   const projRows = projects.map(p => [p.id,p.name,p.module,p.owner,p.pm,p.company,p.phase,p.status,p.priority,p.start,p.goLive,p.budget,p.risk]);
+
   XLSX.utils.book_append_sheet(wbExport, XLSX.utils.aoa_to_sheet([projHeaders, ...projRows]), 'Projects');
 
   XLSX.writeFile(wbExport, `oracle_fusion_dashboard_${fmtDate(new Date())}.xlsx`);
+
 }
 
 function exportDashboardPDF() {
+
   const dashEl = document.getElementById('tab-dashboard');
+
   const exportBar = dashEl.querySelector('.export-bar');
+
   if(exportBar) exportBar.style.display = 'none';
 
   html2canvas(dashEl, {
+
     scale: 1.5,
+
     useCORS: true,
+
     allowTaint: true,
+
     backgroundColor: '#f0f2f5',
+
     windowWidth: 1400,
+
     scrollY: -window.scrollY
+
   }).then(canvas => {
+
     if(exportBar) exportBar.style.display = '';
+
     const { jsPDF } = window.jspdf;
+
     const imgData = canvas.toDataURL('image/png');
+
     const imgWidth = 280;
+
     const imgHeight = canvas.height * imgWidth / canvas.width;
+
     const pageHeight = 400;
+
     const pdf = new jsPDF('l', 'mm', [imgWidth + 10, Math.min(imgHeight + 20, pageHeight)]);
 
     pdf.setFillColor(27, 42, 74);
+
     pdf.rect(0, 0, imgWidth + 10, 14, 'F');
+
     pdf.setTextColor(255, 255, 255);
+
     pdf.setFontSize(12);
+
     pdf.text('Oracle Fusion Task & Project Dashboard', 5, 10);
+
     pdf.setFontSize(8);
+
     pdf.text(`Exported: ${new Date().toLocaleString()}`, imgWidth - 40, 10);
 
     let yPos = 16;
+
     let remainingHeight = imgHeight;
 
     while(remainingHeight > 0) {
+
       const sliceHeight = Math.min(remainingHeight, pageHeight - 20);
+
       if(yPos !== 16) { pdf.addPage([imgWidth + 10, sliceHeight + 20]); yPos = 5; }
+
       pdf.addImage(imgData, 'PNG', 5, yPos, imgWidth, imgHeight, undefined, 'FAST', 0);
+
       remainingHeight -= sliceHeight;
+
       if(remainingHeight > 0) yPos = -(imgHeight - remainingHeight);
+
     }
 
     pdf.save(`oracle_fusion_dashboard_${fmtDate(new Date())}.pdf`);
+
   }).catch(err => {
+
     if(exportBar) exportBar.style.display = '';
+
     alert('PDF export failed. Please try again.');
+
     console.error(err);
+
   });
+
 }
 
 // ══════════════════════════════════════════════
+
 // LOCALSTORAGE SAVE / LOAD
+
 // ══════════════════════════════════════════════
+
 const STORAGE_KEY = 'oracleFusionTaskManager';
+
 let isDirty = false;
+
 let autoSaveTimer = null;
 
 function showToast(msg, type='success') {
+
   const toast = document.getElementById('toast');
+
   const icon = toast.querySelector('.toast-icon');
+
   const msgEl = document.getElementById('toastMsg');
+
   toast.className = 'toast ' + type;
+
   icon.textContent = type === 'success' ? '\u2713' : type === 'error' ? '\u2717' : '\u24D8';
+
   msgEl.textContent = msg;
+
   toast.classList.add('show');
+
   setTimeout(() => toast.classList.remove('show'), 3000);
+
 }
 
 function updateSaveIndicator(saved) {
+
   const dot = document.getElementById('saveDot');
+
   const text = document.getElementById('saveText');
+
   if(saved) {
+
     dot.className = 'save-dot saved';
+
     text.textContent = 'Saved';
+
   } else {
+
     dot.className = 'save-dot unsaved';
+
     text.textContent = 'Unsaved changes';
+
   }
+
 }
 
 function markDirty() {
+
   isDirty = true;
+
   updateSaveIndicator(false);
+
   // Auto-save after 5 seconds of inactivity
+
   if(autoSaveTimer) clearTimeout(autoSaveTimer);
+
   autoSaveTimer = setTimeout(() => autoSave(), 5000);
+
 }
 
 function getSaveData() {
+
   return {
+
     version: 2,
+
     savedAt: new Date().toISOString(),
+
     tasks: tasks,
+
     projects: projects,
+
     lov: LOV,
+
     taskIdCounter: taskIdCounter
+
   };
+
 }
 
 function manualSave() {
+
   try {
+
     const data = getSaveData();
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+
     isDirty = false;
+
     updateSaveIndicator(true);
+
     showToast(`Saved successfully! (${tasks.length} tasks, ${projects.length} projects)`, 'success');
+
   } catch(e) {
+
     showToast('Save failed: ' + e.message, 'error');
+
   }
+
 }
 
 function autoSave() {
+
   if(!isDirty) return;
+
   try {
+
     localStorage.setItem(STORAGE_KEY, JSON.stringify(getSaveData()));
+
     isDirty = false;
+
     updateSaveIndicator(true);
+
   } catch(e) {
+
     console.error('Auto-save failed:', e);
+
   }
+
 }
 
 function loadFromStorage() {
+
   try {
+
     const raw = localStorage.getItem(STORAGE_KEY);
+
     if(!raw) return false;
+
     const data = JSON.parse(raw);
+
     if(!data.version || !data.tasks) return false;
 
     // Restore tasks
+
     tasks.length = 0;
+
     data.tasks.forEach(t => tasks.push(t));
 
     // Restore projects
+
     projects.length = 0;
+
     data.projects.forEach(p => projects.push(p));
 
     // Restore LOVs
+
     if(data.lov) {
+
       Object.keys(data.lov).forEach(key => {
+
         if(LOV[key] !== undefined) {
+
           if(Array.isArray(data.lov[key])) {
+
             LOV[key].length = 0;
+
             data.lov[key].forEach(item => LOV[key].push(item));
+
           }
+
         }
+
       });
+
     }
 
     // Restore counter
+
     if(data.taskIdCounter) taskIdCounter = data.taskIdCounter;
 
     updateSaveIndicator(true);
+
     const savedDate = new Date(data.savedAt);
+
     showToast(`Loaded data from ${savedDate.toLocaleDateString()} ${savedDate.toLocaleTimeString()}`, 'success');
+
     return true;
+
   } catch(e) {
+
     console.error('Load failed:', e);
+
     return false;
+
   }
+
 }
 
 function clearSavedData() {
+
   showConfirm('Reset All Data', 'This will clear all saved data from the browser and reload with default sample data. Continue?', () => {
+
     localStorage.removeItem(STORAGE_KEY);
+
     location.reload();
+
   });
+
 }
 
-// Patch existing mutation functions to trigger markDirty
-const _origSaveTask = saveTask;
-saveTask = function() { _origSaveTask(); markDirty(); };
-const _origSaveProject = saveProject;
-saveProject = function() { _origSaveProject(); markDirty(); };
+// Patch LOV functions to trigger markDirty
 
-// Patch delete functions
-const _origConfirmDeleteSelectedTasks = confirmDeleteSelectedTasks;
-confirmDeleteSelectedTasks = function() {
-  const ids = getSelectedTaskIds();
-  if(ids.length === 0) return;
-  showConfirm('Delete Selected Tasks', `Are you sure you want to delete ${ids.length} selected task(s)? This action cannot be undone.`, () => {
-    const idSet = new Set(ids);
-    for(let i = tasks.length - 1; i >= 0; i--) { if(idSet.has(tasks[i].id)) tasks.splice(i, 1); }
-    applyFilters(); markDirty();
-  });
-};
-const _origConfirmDeleteAllTasks = confirmDeleteAllTasks;
-confirmDeleteAllTasks = function() {
-  const filtered = getFilteredTasks();
-  if(filtered.length === 0) return;
-  const isFiltered = filtered.length < tasks.length;
-  const label = isFiltered ? `${filtered.length} filtered task(s)` : `ALL ${tasks.length} task(s)`;
-  showConfirm('Delete All Tasks', `Are you sure you want to delete ${label}? This action cannot be undone.`, () => {
-    if(isFiltered) { const idSet = new Set(filtered.map(t=>t.id)); for(let i=tasks.length-1;i>=0;i--){if(idSet.has(tasks[i].id))tasks.splice(i,1);} }
-    else { tasks.length = 0; }
-    applyFilters(); markDirty();
-  });
-};
-const _origConfirmDeleteSelectedProjects = confirmDeleteSelectedProjects;
-confirmDeleteSelectedProjects = function() {
-  const ids = getSelectedProjectIds();
-  if(ids.length === 0) return;
-  showConfirm('Delete Selected Projects', `Are you sure you want to delete ${ids.length} selected project(s)? This action cannot be undone.`, () => {
-    const idSet = new Set(ids);
-    for(let i=projects.length-1;i>=0;i--){if(idSet.has(projects[i].id))projects.splice(i,1);}
-    renderProjects(); applyFilters(); markDirty();
-  });
-};
-const _origConfirmDeleteAllProjects = confirmDeleteAllProjects;
-confirmDeleteAllProjects = function() {
-  if(projects.length===0) return;
-  showConfirm('Delete All Projects', `Are you sure you want to delete ALL ${projects.length} project(s)? This action cannot be undone.`, () => {
-    projects.length = 0; renderProjects(); applyFilters(); markDirty();
-  });
-};
-
-// Patch LOV functions
 const _origAddLOV = addLOV;
+
 addLOV = function(key, type) { _origAddLOV(key, type); markDirty(); };
+
 const _origRemoveLOV = removeLOV;
+
 removeLOV = function(key, idx, type) { _origRemoveLOV(key, idx, type); markDirty(); };
 
 // Save before page unload
+
 window.addEventListener('beforeunload', () => { if(isDirty) autoSave(); });
 
 // ══════════════════════════════════════════════
+
 // INIT
+
 // ══════════════════════════════════════════════
+
 const loaded = loadFromStorage();
+
 populateFilters();
+
 applyFilters();
+
 renderProjects();
+
 if(!loaded) updateSaveIndicator(true);
+
 </script>
+
 </body>
+
 </html>
